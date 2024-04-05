@@ -12,7 +12,9 @@ The one that starts with `01classify_` is the actual run of the classification b
 - randomized MNIST
 - simulated speckles output with measured TM and MNIST as input
 - measured speckles output after propagation through the MMF
-This script will output the classification ACCURACY_ using each dataset.
+
+This script will output the classification ACCURACY_ using each dataset. To run this script on your own, you need to download the datasets and put them in the same folder of this script. 
+The dataset can be downloaded at the following DOI: 10.6084/m9.figshare.25551186
 
 
 The file that starts with `02plot_` is in charge of plotting all the results. Since the previous script require intense hardware computation, this one can load pretrained results to visualize them directly.
