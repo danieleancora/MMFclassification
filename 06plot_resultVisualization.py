@@ -48,9 +48,9 @@ store_test_acc_SPECKLEsimul = opendata['arr_2']
 # SPECKLE recorded in camera after mnist propagation --------- RUN THIS ONE!!!!
 fnamesave = 'ACCURACY_train' + str(P) + 'test' + str(1000)+'_specklMeasured'
 opendata = np.load(fnamesave+'.npz')
-store_howmany_SPECKLEsimul = opendata['arr_0']
-store_train_acc_SPECKLEsimul = opendata['arr_1']
-store_test_acc_SPECKLEsimul = opendata['arr_2']
+store_howmany_SPECKLEmeasured = opendata['arr_0']
+store_train_acc_SPECKLEmeasured = opendata['arr_1']
+store_test_acc_SPECKLEmeasured = opendata['arr_2']
 
 
 # %% PLOT
@@ -60,7 +60,7 @@ plt.errorbar(samples, store_test_acc_MNISTstandard.mean(axis=0), yerr=store_test
 plt.errorbar(samples, store_test_acc_MNISTrandom.mean(axis=0), yerr=store_test_acc_MNISTrandom.std(axis=0), label='MNIST randomized')
 plt.errorbar(samples, store_test_acc_MNISTzoom.mean(axis=0), yerr=store_test_acc_MNISTzoom.std(axis=0), label='MNIST upscaled')
 plt.errorbar(samples, store_test_acc_SPECKLEsimul.mean(axis=0), yerr=store_test_acc_SPECKLEsimul.std(axis=0), label='MMF a-simulated')
-plt.errorbar(samples, store_test_acc_SPECKLEsimul.mean(axis=0), yerr=store_test_acc_SPECKLEsimul.std(axis=0), label='MMF a-measured')
+plt.errorbar(samples, store_test_acc_SPECKLEmeasured.mean(axis=0), yerr=store_test_acc_SPECKLEmeasured.std(axis=0), label='MMF a-measured')
 plt.xlabel('Training samples [M]')
 plt.ylabel('Test accuracy')
 plt.legend()
