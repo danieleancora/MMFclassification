@@ -68,11 +68,14 @@ plt.errorbar(samples, store_test_acc_MNISTstandard.mean(axis=0), yerr=store_test
 plt.errorbar(samples, store_test_acc_MNISTrandom.mean(axis=0), yerr=store_test_acc_MNISTrandom.std(axis=0), label='MNIST randomized')
 plt.errorbar(samples, store_test_acc_MNISTzoom.mean(axis=0), yerr=store_test_acc_MNISTzoom.std(axis=0), label='MNIST upscaled')
 plt.errorbar(samples, store_test_acc_SPECKLEsimul.mean(axis=0), yerr=store_test_acc_SPECKLEsimul.std(axis=0), label='MMF a-simulated')
-plt.errorbar(samples, store_test_acc_SPECKLErandom.mean(axis=0), yerr=store_test_acc_SPECKLErandom.std(axis=0), label='MMF random phase')
+plt.errorbar(samples, store_test_acc_SPECKLErandom.mean(axis=0), yerr=store_test_acc_SPECKLErandom.std(axis=0), label='MMF simulated random phase')
 plt.errorbar(samples, store_test_acc_SPECKLEmeasured.mean(axis=0), yerr=store_test_acc_SPECKLEmeasured.std(axis=0), label='MMF a-measured')
 plt.xlabel('Training samples [M]')
 plt.ylabel('Test accuracy')
 plt.legend()
+
+
+
 
 
 
