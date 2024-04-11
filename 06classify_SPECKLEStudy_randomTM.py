@@ -1,23 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun  9 15:58:09 2022
+Created on Thu Apr 11 12:40:54 2024
 
-This code perform a study on classification performance of various output
-datasets originated by a given MNIST input set.
-
-It includes classification results from:
-    - standard MNIST
-    - randomized MNIST
-    - zoomed MNIST
-    - measured speckles output after propagation through the MMF
-    - simulated speckles output with measured TM and MNIST as input ----------- RUN THIS ONE!!!!
-
-!!! WARNING: This code works with very big matrices and may take a very long 
-time to execute, eventually terminating hardware memory and crashing. 
-The code was tested with powerful workstation equipped with 128Gb of RAM.
-
-@author: Daniele Ancora
+@author: daniele
 """
 
 import cupy as cp
@@ -55,32 +41,12 @@ runfor = int(P/stepP)
 targetsize = 600
 
 
-# %% ######################################################## CLASSIFICATION 05
-# MNIST passing through estimated TM, speckle simulation ----- RUN THIS ONE!!!!
-# fname = 'TM00' + "_10000_P28_handwritten_inA_cam_Alpha"
-# tmXY = np.load(fname+'.npz')
-# tmXY = tmXY['arr_0']
-
-# the entire tmXY leads to output size of 900x900 which we crop down to 600x600
-# outputL = int((tmXY.shape[1])**0.5)
-# tmXY = tmXY.reshape(tmXY.shape[0], outputL, outputL)
-# tmXY = tmXY[:,150:-150,150:-150]
-# tmXY = tmXY.reshape(tmXY.shape[0], tmXY.shape[1]*tmXY.shape[2])
-
-# load the 600x600 transmission matrix
+# %% ######################################################## CLASSIFICATION 06
 fname = 'transmission_fullRes.npy'
 tmXY = np.load(fname).squeeze()
 
-# apply the trasmission matrix to the slm input to obtain the speckle output
-X = np.asarray(slm, dtype=cp.float32)
-X = X.reshape(X.shape[0],X.shape[1]*X.shape[2])
-X = np.matmul(X,tmXY)
-X = np.abs(X)**2
-
+tmXY_abs = np.abs(tmXY)
 del tmXY
-
-X = np.asarray(X, dtype=np.float32)
-X = X / X.max()
 
 Y = np.asarray(labels) 
 
@@ -91,24 +57,45 @@ store_test_acc = np.zeros((attempts, runfor))
 store_howmany = np.zeros(runfor)
 
 for i in range(attempts):
+    speckles = None
+    tmXY_phase = None
+    
+    # TM generation block
+    tmXY_phase = 2*np.pi*np.random.rand(tmXY_abs.shape[0],tmXY_abs.shape[1]).astype(np.float32)
+    
+    transmission = np.asarray(tmXY_abs) * np.exp(1j*np.asarray(tmXY_phase))
+    
+    # apply the trasmission matrix to the slm input to obtain the speckle output
+    X = cp.asarray(slm, dtype=cp.float32)
+    X = X.reshape(X.shape[0],X.shape[1]*X.shape[2])
+    speckles = cp.matmul(X,cp.asarray(transmission)).get()
+    
+    transmission = None
+    X = None
+    
+    speckles = (speckles)**2
+    
+    speckles = np.asarray(speckles, dtype=np.float32)
+    speckles = speckles / speckles.max()
+    
+    X = speckles.copy()
+    # end block
+
     for j in range(runfor):
 
         # SHUFFLE DATASET CONSISTENTLY
-        seed = np.random.randint(0,2**32-1)
-        np.random.seed(seed)
-        np.random.shuffle(X)
-        np.random.seed(seed)
-        np.random.shuffle(Y)
+        idx = np.arange(4800)
+        np.random.shuffle(idx) 
 
         howmany = stepP*(j+1)
         store_howmany[j] = howmany
         print('(',i,',', j, ')', 'train with = ', howmany, 'measurements')
 
         # split dataset
-        train_X = X[:howmany,:]
-        train_Y = Y[:howmany]
-        test_X = X[P:,:]
-        test_Y = Y[P:]
+        train_X = X[idx[:howmany],:]
+        train_Y = Y[idx[:howmany]]
+        test_X = X[idx[P:],:]
+        test_Y = Y[idx[P:]]
     
         # TRAIN THE LINEAR MODEL
         model = LogisticRegression(solver="qn", max_iter=1e4, tol=1e-5, penalty="l2", C=C, verbose=2).fit(train_X,train_Y)        
@@ -124,7 +111,7 @@ for i in range(attempts):
 
 
 # %% SAVE STUFF
-fnamesave = 'ACCURACY_train' + str(P) + 'test'+str(1000)+'_specklSimula'
+fnamesave = 'ACCURACY_train' + str(P) + 'test'+str(1000)+'_specklRandom'
 cp.savez(fnamesave, store_howmany,store_train_acc,store_test_acc)
 
 opendata = np.load(fnamesave+'.npz')
@@ -134,11 +121,6 @@ store_test_acc_SPECKLEsimul = opendata['arr_2']
 
 
 plt.plot(store_test_acc_SPECKLEsimul.mean(axis=0))
-
-
-
-
-
 
 
 
